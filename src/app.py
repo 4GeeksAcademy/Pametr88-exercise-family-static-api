@@ -27,16 +27,69 @@ def sitemap():
 
 @app.route('/members', methods=['GET'])
 def handle_hello():
-
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
+    return jsonify(members), 200
 
 
-    return jsonify(response_body), 200
+@app.route("/member/<int:id>", methods=['GET'])
+def get_member(id):
+    try:
+        member_needed = jackson_family.get_member(id)
+        if member_needed:
+            # Corregir las claves en el diccionario devuelto
+            return {
+                "name": member_needed["first_name"],
+                "id": member_needed["id"],
+                "age": member_needed["age"],
+                "lucky_numbers": member_needed["Lucky Numbers"]
+            }, 200
+        else:
+            return {"error": "The member does not exist"}, 404
+
+    except:
+        return {"error": "There was an error in the server"}, 500
+
+
+
+@app.route("/member", methods=['POST'])
+def post_new_member():
+    try:
+        first_name = request.json.get("first_name")
+        age = request.json.get("age")
+        lucky_numbers = request.json.get("lucky_numbers")
+        id = request.json.get("id")
+
+        new_member = {
+            "first_name": first_name,
+            "age": age,
+            "id": jackson_family._generateId(),
+            "lucky_numbers": lucky_numbers,
+            "last_name": "Jackson"
+        }
+
+        jackson_family.add_member(new_member)
+
+        return jsonify({"message": "Member added successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
+
+
+@app.route("/member/<int:id>", methods=["DELETE"])
+def delete_member(id):
+    try:
+        member_deleted = jackson_family.delete_member(id)
+        print("Members after deletion:", len(jackson_family.get_all_members()), jackson_family.get_all_members())
+        if member_deleted:
+            # Correct the return statement
+            return jsonify({"done": True}), 200
+        else:
+            return jsonify({"message": "The member does not exist!"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
