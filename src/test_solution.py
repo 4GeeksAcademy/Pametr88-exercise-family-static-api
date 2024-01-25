@@ -1,5 +1,7 @@
 import pytest, os, sys, tempfile, mock, json
 from flask import Flask
+from datastructures import FamilyStructure
+
 
 @pytest.fixture
 def client():
@@ -15,7 +17,7 @@ def client():
 
         os.close(db_fd)
         os.unlink(app.config['DATABASE'])
-	
+    
 @pytest.mark.it("The Family structure has to be initialized with the 3 members specified in the instructions")
 def test_first_three(client):
     response = client.get('/members')
@@ -25,21 +27,21 @@ def test_first_three(client):
 @pytest.mark.it("Implement method POST /member to add a new member")
 def test_add_implementation(client):
     response = client.post('/member', json={
-		"first_name": "Tommy",
+        "first_name": "Tommy",
         "id": 3443,
-		"age": 23,
-		"lucky_numbers": [34,65,23,4,6]
-	})
+        "age": 23,
+        "lucky_numbers": [34,65,23,4,6]
+    })
     assert response.status_code == 200
 
 @pytest.mark.it("Method POST /member should return something, NOT EMPTY")
 def test_add_empty_reponse_body(client):
     response = client.post('/member', json={
-		"first_name": "Sandra",
-		"age": 12,
+        "first_name": "Sandra",
+        "age": 12,
         "id": 4446,
-		"lucky_numbers": [12,34,33,45,32,12]
-	})
+        "lucky_numbers": [12,34,33,45,32,12]
+    })
     assert response.data != b""
 
 @pytest.mark.it("Implement method GET /members")
@@ -98,11 +100,11 @@ def test_delete_member(client):
 @pytest.mark.it("Method DELETE /member/3443 should return dictionary with 'done' key")
 def test_delete_response(client):
     client.post('/member', json={
-		"first_name": "Tommy",
+        "first_name": "Tommy",
         "id": 3443,
-		"age": 23,
-		"lucky_numbers": [34,65,23,4,6]
-	})
+        "age": 23,
+        "lucky_numbers": [34,65,23,4,6]
+    })
     response = client.delete('/member/3443')
     assert response.json["done"] == True
 
@@ -111,3 +113,4 @@ def test_get_members_returns_list_of_four(client):
     response = client.get('/members')
     members = json.loads(response.data)
     assert len(members) == 4
+
